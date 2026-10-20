@@ -372,6 +372,8 @@ textarea.field { direction: ltr; text-align: left; font-family: var(--mono); fon
             <option value="cloudflare-ech.com+https://8.8.8.8/dns-query">cloudflare-ech.com+https://8.8.8.8/dns-query</option>
             <option value="cloudflare-ech.com+h2c://1.1.1.1/dns-query">cloudflare-ech.com+h2c://1.1.1.1/dns-query</option>
             <option value="h2c://1.1.1.1/dns-query">h2c://1.1.1.1/dns-query</option>
+            <option value="cloudflare-ech.com+https://8.8.4.4/dns-query">cloudflare-ech.com+https://8.8.4.4/dns-query</option>
+            <option value="https://8.8.4.4/dns-query">https://8.8.4.4/dns-query</option>
             <option value="cloudflarestaging.com+udp://1.1.1.1">cloudflarestaging.com+udp://1.1.1.1</option>
             <option value="geedo.com+udp://1.1.1.1">geedo.com+udp://1.1.1.1</option>
             <option value="trustedstack.com+udp://1.1.1.1">trustedstack.com+udp://1.1.1.1</option>
@@ -2226,6 +2228,7 @@ function say(key) { setStatus(function () { return t(key); }); }
 var ECH_PRESETS = ["cloudflare-ech.com+udp://1.1.1.1", "crypto.cloudflare.com+udp://1.1.1.1", "cloudflare-ech.com+udp://1.0.0.1",
   "cloudflare-ech.com+udp://8.8.8.8", "cloudflare-ech.com+https://1.1.1.1/dns-query", "cloudflare-ech.com+https://8.8.8.8/dns-query",
   "cloudflare-ech.com+h2c://1.1.1.1/dns-query", "h2c://1.1.1.1/dns-query",
+  "cloudflare-ech.com+https://8.8.4.4/dns-query", "https://8.8.4.4/dns-query",
   "cloudflarestaging.com+udp://1.1.1.1", "geedo.com+udp://1.1.1.1", "trustedstack.com+udp://1.1.1.1", "ifconfig.io+udp://1.1.1.1", "ay.delivery+udp://1.1.1.1", "mygaru.com+udp://1.1.1.1", "mgaru.dev+udp://1.1.1.1", "adtarget.com.tr+udp://1.1.1.1", "prestiti.it+udp://1.1.1.1", "cdnfonts.com+udp://1.1.1.1", "flagcdn.com+udp://1.1.1.1", "ecanet.ir+udp://1.1.1.1", "fxapex.ir+udp://1.1.1.1", "aef.ir+udp://1.1.1.1", "amarfa.ir+udp://1.1.1.1", "arti.ir+udp://1.1.1.1", "voorivex.ir+udp://1.1.1.1", "potok.ir+udp://1.1.1.1", "obeidarash.ir+udp://1.1.1.1", "raz.ir+udp://1.1.1.1", "11gig.ir+udp://1.1.1.1", "react.ir+udp://1.1.1.1", "webers.ir+udp://1.1.1.1"];
 // PattN / PattNG: ECH lookup over h2c goes through this outbound (TLS repack towards 1.1.1.1)
 var ECH_OUTBOUND = {
