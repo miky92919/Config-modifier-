@@ -403,6 +403,7 @@ textarea.field { direction: ltr; text-align: left; font-family: var(--mono); fon
           <span class="sw-txt"><span class="sw-t" data-i="echObT"></span><span class="sw-d" data-i="echObD"></span></span>
           <input type="checkbox" id="echOb" class="switch">
         </label>
+        <textarea id="echObText" class="field mono" spellcheck="false" aria-label="echOutbound" style="height:230px;margin-top:8px;display:none"></textarea>
         <label for="fp" class="fl" data-i="lblFp"></label>
         <select id="fp" class="field mono">
           <option>chrome</option><option>firefox</option><option>safari</option><option>ios</option>
@@ -538,7 +539,7 @@ textarea.field { direction: ltr; text-align: left; font-family: var(--mono); fon
     </details>
   </section>
 
-  <p class="foot">ECH modifier v27</p>
+  <p class="foot">ECH modifier v28</p>
 </main>
 
 <div class="runbar"><div class="runbar-in">
@@ -1794,6 +1795,7 @@ var STR = {
     lblFm: "Final mask (JSON)",
     lblCs: "Cipher suites",
     badFm: "The final mask is not valid JSON.",
+    badEchOb: "The echOutbound is not a valid JSON object with a \"tag\".",
     lblProfile: "Preset for your network",
     prof_custom: "Custom (set everything yourself)",
     prof_mci_ech: "Hamrah-e Avval: CDN + ECH",
@@ -1916,6 +1918,7 @@ var STR = {
     lblFm: "Final mask (به شکل JSON)",
     lblCs: "Cipher suites",
     badFm: "Final mask به شکل JSON معتبر نیست.",
+    badEchOb: "echOutbound یک آبجکت JSON معتبر با فیلد \"tag\" نیست.",
     lblProfile: "پریست برای شبکه‌ی شما",
     prof_custom: "دلخواه (همه‌چیز را خودتان تنظیم کنید)",
     prof_mci_ech: "همراه اول: CDN با ECH",
@@ -2054,7 +2057,7 @@ var STR = {
       sumPackEch: function (n) { return n + " ECH values"; },
       useEchD: "Cannot be combined with the final mask or cipher suites.",
       echObT: "echOutbound (PattN / PattNG)",
-      echObD: "Adds the echOutbound param (raw JSON, tls-repack-dns) to links whose ECH value uses h2c://. The Xray JSON output gets it as echSockopt plus the outbound.",
+      echObD: "Adds the echOutbound param (raw JSON) to links whose ECH value uses h2c://. The Xray JSON output gets it as echSockopt plus the outbound. The JSON below can be edited; empty means the default.",
       convert: "Convert non-TLS configs to TLS",
       convertD: "ECH needs TLS. Without this, configs with security=none are left alone.",
       addrOn: "Replace address with clean IPs",
@@ -2114,7 +2117,7 @@ var STR = {
       sumPackEch: function (n) { return n + " مقدار ECH"; },
       useEchD: "با final mask و cipher suites هم‌زمان استفاده نمی‌شود.",
       echObT: "echOutbound (PattN / PattNG)",
-      echObD: "به لینک‌هایی که مقدار ECH‌شان h2c:// است، پارامتر echOutbound (JSON خام، با تگ tls-repack-dns) اضافه می‌شود. خروجی JSON هم آن را به‌صورت echSockopt و خود outbound می‌گیرد.",
+      echObD: "به لینک‌هایی که مقدار ECH‌شان h2c:// است، پارامتر echOutbound (JSON خام) اضافه می‌شود. خروجی JSON هم آن را به‌صورت echSockopt و خود outbound می‌گیرد. JSON زیر قابل ویرایش است و اگر خالی بماند مقدار پیش‌فرض استفاده می‌شود.",
       convert: "تبدیل کانفیگ‌های بدون TLS به TLS",
       convertD: "ECH فقط روی TLS کار می‌کند. بدون این گزینه، کانفیگ‌های security=none دست‌نخورده می‌مانند.",
       addrOn: "جایگزینی آدرس با آی‌پی سالم",
@@ -2224,6 +2227,21 @@ var ECH_PRESETS = ["cloudflare-ech.com+udp://1.1.1.1", "crypto.cloudflare.com+ud
   "cloudflare-ech.com+udp://8.8.8.8", "cloudflare-ech.com+https://1.1.1.1/dns-query", "cloudflare-ech.com+https://8.8.8.8/dns-query",
   "cloudflare-ech.com+h2c://1.1.1.1/dns-query", "h2c://1.1.1.1/dns-query",
   "cloudflarestaging.com+udp://1.1.1.1", "geedo.com+udp://1.1.1.1", "trustedstack.com+udp://1.1.1.1", "ifconfig.io+udp://1.1.1.1", "ay.delivery+udp://1.1.1.1", "mygaru.com+udp://1.1.1.1", "mgaru.dev+udp://1.1.1.1", "adtarget.com.tr+udp://1.1.1.1", "prestiti.it+udp://1.1.1.1", "cdnfonts.com+udp://1.1.1.1", "flagcdn.com+udp://1.1.1.1", "ecanet.ir+udp://1.1.1.1", "fxapex.ir+udp://1.1.1.1", "aef.ir+udp://1.1.1.1", "amarfa.ir+udp://1.1.1.1", "arti.ir+udp://1.1.1.1", "voorivex.ir+udp://1.1.1.1", "potok.ir+udp://1.1.1.1", "obeidarash.ir+udp://1.1.1.1", "raz.ir+udp://1.1.1.1", "11gig.ir+udp://1.1.1.1", "react.ir+udp://1.1.1.1", "webers.ir+udp://1.1.1.1"];
+// PattN / PattNG: ECH lookup over h2c goes through this outbound (TLS repack towards 1.1.1.1)
+var ECH_OUTBOUND = {
+  tag: "tls-repack-dns",
+  protocol: "direct",
+  settings: { redirect: "1.1.1.1:443" },
+  streamSettings: {
+    security: "tls",
+    tlsSettings: {
+      serverName: "www.microsoft.com",
+      verifyPeerCertByName: "fromMitM,www.microsoft.com",
+      alpn: ["fromMitM"],
+      fingerprint: "chrome"
+    }
+  }
+};
 var PACK_DEFAULT = [0, 4, 5];   // plain 1.1.1.1 plus the two DoH servers
 
 // values given for the firewall recipes
@@ -2292,7 +2310,7 @@ function saveSettings() {
       addrOn: $("addrOn").checked, addrFam: $("addrFam").value, addrText: $("addrText").value, alpnAuto: $("alpnAuto").checked,
       convert: $("convert").checked, ports: portList(), portsAll: $("portsAll").checked,
       passThrough: $("passThrough").checked, normQuery: $("normQuery").checked, nameTpl: $("nameTpl").value,
-      pack: $("packMode").checked, packType: $("packType").value, packList: packList(), profList: profList(), echOb: $("echOb").checked
+      pack: $("packMode").checked, packType: $("packType").value, packList: packList(), profList: profList(), echOb: $("echOb").checked, echObText: $("echObText").value
     }));
   } catch (e) {}
 }
@@ -2322,6 +2340,7 @@ function updateUi() {
   $("profChips").style.display = byProf ? "block" : "none";
   $("echBox").style.display = ($("useEch").checked && !pack) ? "block" : "none";
   $("fmText").style.display = $("fmSel").value === "custom" ? "block" : "none";
+  $("echObText").style.display = $("echOb").checked ? "block" : "none";
   $("csText").style.display = $("csSel").value === "custom" ? "block" : "none";
   $("addrBox").style.display = ($("addrOn").checked || byProf) ? "block" : "none";
   $("addrFamBox").style.display = byProf ? "none" : "block";
@@ -2370,6 +2389,7 @@ function loadSettings() {
   $("fmText").value = DEFAULT_FM;
   $("csText").value = DEFAULT_CS;
   $("addrText").value = DEFAULT_ADDRS;
+  $("echObText").value = JSON.stringify(ECH_OUTBOUND, null, 2);
   var s = null;
   try { s = JSON.parse(localStorage.getItem("echSettings") || "null"); } catch (e) {}
   if (!s) { syncPreset(); updateUi(); return; }
@@ -2380,6 +2400,7 @@ function loadSettings() {
   if (typeof s.passThrough === "boolean") { $("passThrough").checked = s.passThrough; }
   if (typeof s.normQuery === "boolean") { $("normQuery").checked = s.normQuery; }
   if (typeof s.echOb === "boolean") { $("echOb").checked = s.echOb; }
+  if (typeof s.echObText === "string" && trim(s.echObText)) { $("echObText").value = s.echObText; }
   if (typeof s.nameTpl === "string") { $("nameTpl").value = s.nameTpl; }
   if (typeof s.pack === "boolean") { $("packMode").checked = s.pack; }
   if (s.ports && s.ports.length !== undefined) {
@@ -2452,10 +2473,17 @@ function buildOpts(st) {
   else if (st.cs === "full") { cs = safeEnc(DEFAULT_CS.replace(/\s+/g, "")); }
   else if (st.cs === "custom") { cs = safeEnc(st.csText.replace(/\s+/g, "")); }
   if (st.useEch && !st.ech) { return { err: "emptyEch" }; }
+  var eo = "";
+  if (st.useEch && $("echOb").checked && /h2c:\/\//i.test(st.ech)) {
+    var ebTxt = trim($("echObText").value), eb;
+    try { eb = ebTxt ? JSON.parse(ebTxt) : ECH_OUTBOUND; } catch (e5) { return { err: "badEchOb" }; }
+    if (!eb || typeof eb !== "object" || Array.isArray(eb) || typeof eb.tag !== "string" || !eb.tag) { return { err: "badEchOb" }; }
+    eo = safeEnc(JSON.stringify(eb));
+  }
   var a = parseAddrList(st.addrOn ? st.addrText : "", st.addrFam);
   if (st.addrOn && !a.list.length) { return { err: "noAddr" }; }
   return {
-    opts: { ech: st.useEch ? st.ech : "", eo: (st.useEch && $("echOb").checked && /h2c:\/\//i.test(st.ech)) ? safeEnc(JSON.stringify(ECH_OUTBOUND)) : "", fp: st.fp, fm: fm, cs: cs, addrs: a.list, alpnAuto: !!st.alpnAuto && (fm !== "" || cs !== ""),
+    opts: { ech: st.useEch ? st.ech : "", eo: eo, fp: st.fp, fm: fm, cs: cs, addrs: a.list, alpnAuto: !!st.alpnAuto && (fm !== "" || cs !== ""),
             convert: $("convert").checked, ports: portList(), portsAll: $("portsAll").checked },
     badAddr: a.bad, otherAddr: a.other
   };
@@ -3044,21 +3072,6 @@ function linkToXray(link) {
   return { name: name || (host + ":" + port), outbound: ob, extra: extraOb };
 }
 
-// PattN / PattNG: ECH lookup over h2c goes through this outbound (TLS repack towards 1.1.1.1)
-var ECH_OUTBOUND = {
-  tag: "tls-repack-dns",
-  protocol: "direct",
-  settings: { redirect: "1.1.1.1:443" },
-  streamSettings: {
-    security: "tls",
-    tlsSettings: {
-      serverName: "www.microsoft.com",
-      verifyPeerCertByName: "fromMitM,www.microsoft.com",
-      alpn: ["fromMitM"],
-      fingerprint: "chrome"
-    }
-  }
-};
 function xrayConfig(link) {
   var r = linkToXray(link);
   if (!r) { return null; }
@@ -3768,7 +3781,7 @@ $("scanPhotoIn").onchange = function () {
 buildPackChips();   // before the change handlers below, so the new checkboxes get them too
 
 function markCustom() { if ($("profile").value !== "custom") { $("profile").value = "custom"; } }
-var plain = document.querySelectorAll("#convert, #portsAll, #passThrough, #normQuery, #echOb, input[name=port], input[name=packEch], input[name=packProf]");
+var plain = document.querySelectorAll("#convert, #portsAll, #passThrough, #normQuery, #echOb, #echObText, input[name=port], input[name=packEch], input[name=packProf]");
 for (var k = 0; k < plain.length; k++) { plain[k].onchange = saveSettings; }
 var manual = ["useEch", "ech", "fp", "fmSel", "fmText", "csSel", "csText", "addrOn", "addrFam", "alpnAuto"];
 manual.forEach(function (id) {
